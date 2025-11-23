@@ -1,12 +1,15 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import UserItem from "./UserItem";
 
 function App() {
-  const [people, setPeople] = useState ([
-    { id: 1, name: "Leanne Graham" },
-    { id: 2, name: "Ervin Howell" },
-    { id: 3, name: "Clementine Bauch" }
-  ]);
+  const [people, setPeople] = useState ([]);
+
+  useEffect(() => {
+    fetch("https://jsonplaceholder.typicode.com/users")
+      .then(res => res.json())
+      .then(data => setPeople(data))
+      .catch(err => console.error("Fetch failed:", err));
+  },[]);
 
   return (
     <ul>
