@@ -1,9 +1,22 @@
 import { useState, useEffect } from "react";
 import UserItem from "./UserItem";
+const SEARCH_KEY = "react-users-search";
 
 function App() {
   const [people, setPeople] = useState ([]);
   const [searchTerm, setSearchTerm] = useState("");
+
+    useEffect(() => {
+    const savedTerm = localStorage.getItem(SEARCH_KEY);
+    if (savedTerm) {
+      setSearchTerm(savedTerm);
+    }
+  }, []);
+
+  useEffect(() => {
+  localStorage.setItem(SEARCH_KEY, searchTerm);
+}, [searchTerm]);
+
 
   useEffect(() => {
     fetch("https://jsonplaceholder.typicode.com/users")
@@ -24,6 +37,10 @@ function App() {
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
       />
+      <button onClick={() => setSearchTerm("")}>
+  Clear
+</button>
+
 <p>{filteredPeople.length} users found</p>
 
       <ul>
