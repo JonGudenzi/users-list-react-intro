@@ -1,35 +1,60 @@
 import { useState, useEffect } from "react";
 import UserItem from "./UserItem";
+
 const SEARCH_KEY = "react-users-search";
 
+function PracticeMessage({ term, count }) {
+  return (
+    <p>
+      Practice: "{term}" — {count} result{count === 1 ? "" : "s"}
+    </p>
+  );
+}
+
 function App() {
-  const [people, setPeople] = useState ([]);
+  const [people, setPeople] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
 
-    useEffect(() => {
+  // Load saved search term on first render
+  useEffect(() => {
     const savedTerm = localStorage.getItem(SEARCH_KEY);
     if (savedTerm) {
       setSearchTerm(savedTerm);
     }
   }, []);
 
+  // Save search term whenever it changes
   useEffect(() => {
-  localStorage.setItem(SEARCH_KEY, searchTerm);
-}, [searchTerm]);
+    localStorage.setItem(SEARCH_KEY, searchTerm);
+  }, [searchTerm]);
 
-
+  // Fetch users on first render
   useEffect(() => {
-    fetch("https://jsonplaceholder.typicode.com/users")
-      .then(res => res.json())
-      .then(data => setPeople(data))
-      .catch(err => console.error("Fetch failed:", err));
-  },[]);
+  async function loadUsers() {
+    try {
+      const res = await fetch("https://jsonplaceholder.typicode.com/users");
+      const data = await res.json();
+      setPeople(data);
+    } catch (err) {
+      console.error("Fetch failed:", err);
+    }
+  }
+  loadUsers();
+}, []);
 
-  const filteredPeople = people.filter(person =>
-  person.name.toLowerCase().includes(searchTerm.toLowerCase())
-);
+  const filteredPeople = people.filter((person) =>
+    person.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
-   return (
+  function getMessage() {
+    if (searchTerm === "") {
+      return "Start typing to search users.";
+    } else {
+      return `Searching for: ${searchTerm}`;
+    }
+  }
+
+  return (
     <>
       <input
         type="text"
@@ -37,11 +62,13 @@ function App() {
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
       />
-      <button onClick={() => setSearchTerm("")}>
-  Clear
-</button>
 
-<p>{filteredPeople.length} users found</p>
+      <p>{filteredPeople.length} users found</p>
+      <p>You typed: {searchTerm}</p>
+      <p>{getMessage()}</p>
+      <PracticeMessage term={searchTerm} count={filteredPeople.length} />
+
+      {filteredPeople.length === 0 && <p>No users found.</p>}
 
       <ul>
         {filteredPeople.map((person) => (
